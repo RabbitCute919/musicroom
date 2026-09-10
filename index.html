@@ -1,0 +1,63 @@
+// ฟังก์ชันรับคำสั่ง POST จากหน้าเว็บ (GitHub)
+function doPost(e) {
+  try {
+    let requestData = JSON.parse(e.postData.contents);
+    let action = requestData.action;
+    
+    if (action === "bookRoom") {
+      return handleBooking(requestData);
+    }
+    
+  } catch (error) {
+    return createResponse({ status: "error", message: error.toString() });
+  }
+}
+
+function handleBooking(data) {
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  let bookingSheet = ss.getSheetByName("Bookings");
+  let settingsSheet = ss.getSheetByName("Settings");
+  
+  // 1. บันทึกข้อมูลลง Sheet Bookings
+  let timestamp = new Date();
+  bookingSheet.appendRow([
+    timestamp, data.username, data.room, data.startTime, "รอใช้งาน"
+  ]);
+  
+  // 2. ดึงค่า Email และ Line Token จากหน้า Settings แบบ Dynamic (เปลี่ยนใน Sheet ได้เลย)
+  let adminEmail = settingsSheet.getRange("B1").getValue();
+  let lineToken = settingsSheet.getRange("B2").getValue();
+  let message = `มีการจองห้องใหม่!\nผู้จอง: ${data.username}\nห้อง: ${data.room}\nเวลา: ${data.startTime}`;
+  
+  // 3. ส่ง Email แจ้งเตือน
+  if (adminEmail) {
+    MailApp.sendEmail({
+      to: adminEmail,
+      subject: "แจ้งเตือนการจองห้อง",
+      body: message
+    });
+  }
+  
+  // 4. ส่ง LINE แจ้งเตือน
+  if (lineToken) {
+    let options = {
+      "method": "post",
+      "headers": { "Authorization": "Bearer " + lineToken },
+      "payload": { "message": message }
+    };
+    UrlFetchApp.fetch("https://notify-api.line.me/api/notify", options);
+  }
+  
+  return createResponse({ status: "success", message: "จองสำเร็จและส่งการแจ้งเตือนแล้ว" });
+}
+
+// ฟังก์ชันสำหรับเปิด CORS ให้ GitHub Pages เรียกใช้งานได้
+function createResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// อนุญาตให้เรียกแบบ GET (เอาไว้เทสต์หรือดึงข้อมูลห้องว่าง)
+function doGet(e) {
+  return createResponse({ status: "success", message: "API is running" });
+}
