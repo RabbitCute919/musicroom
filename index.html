@@ -7,113 +7,154 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; }
-        .admin-card { max-width: 800px; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .btn-danger { background-color: #dc3545; }
+        .wide-card { max-width: 800px; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { border: none; cursor: pointer; font-weight: bold; color: white; }
         .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; padding: 6px 12px; width: auto; margin: 0; font-size: 14px;}
+        .btn-danger:hover { background-color: #c82333; }
         
-        /* แก้ปัญหาหน้าโชว์พร้อมกัน โดยใส่ !important บังคับให้ซ่อนเด็ดขาด */
-        .hidden { display: none !important; } 
-        
-        .booking-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .action-btn { width: auto; padding: 5px 15px; margin:0; }
-        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .active-item { border-left: 5px solid #ffc107; background: #fff8e5; padding: 10px 15px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
-
-        /* สไตล์สำหรับตัวบอกเวอร์ชันมุมขวาล่าง */
-        .version-badge {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #555;
-            font-size: 12px;
-            padding: 5px 10px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            font-weight: bold;
-            z-index: 1000;
-        }
+        .version { position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #888; background: white; padding: 4px 8px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);}
     </style>
 </head>
 <body>
 
-    <!-- 1. หน้า Login -->
-    <div id="loginPage" class="card">
-        <h2>เข้าสู่ระบบ</h2>
-        <form id="loginForm">
-            <input type="text" id="loginUser" placeholder="ชื่อผู้ใช้งาน" required>
-            <input type="password" id="loginPass" placeholder="รหัสผ่าน" required>
-            <button type="submit">Login</button>
+    <!-- ส่วนที่ 1: ฟอร์ม Check-in -->
+    <div class="card">
+        <h2 style="margin-top: 0;">ลงชื่อเข้าใช้ห้อง</h2>
+        <form id="checkInForm">
+            <input type="text" id="userName" placeholder="กรอกชื่อ-นามสกุล หรือ รหัส" required>
+            <select id="roomSelect">
+                <option value="ห้องดนตรี 1">ห้องดนตรี 1</option>
+                <option value="ห้องดนตรี 2">ห้องดนตรี 2</option>
+                <option value="ห้องบันทึกเสียง">ห้องบันทึกเสียง</option>
+            </select>
+            <button type="submit" class="btn-success">Check-in เข้าใช้งาน</button>
         </form>
-        <div id="loginStatus" style="color:red; text-align:center; margin-top:10px;"></div>
+        <div id="statusMsg" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
     </div>
 
-    <!-- 2. แถบเมนูด้านบน (ซ่อนตอนยังไม่ล็อคอิน สังเกตคลาส hidden) -->
-    <div id="navBar" class="nav-bar hidden">
-        <span id="welcomeText" style="font-weight:bold;"></span>
-        <div style="display: flex; gap: 5px;">
-            <button id="btnAdmin" class="action-btn hidden" style="background:#ffc107; color:black;">ตั้งค่าระบบ</button>
-            <button id="btnHome" class="action-btn hidden" style="background:#17a2b8;">หน้าหลัก</button>
-            <button id="btnLogout" class="action-btn btn-danger">ออกจากระบบ</button>
-        </div>
+    <!-- ส่วนที่ 2: รายการคนที่กำลังใช้งานอยู่ (เพื่อให้กด Check-out) -->
+    <div class="card">
+        <h2 style="margin-top: 0; color: #d39e00;">ผู้ที่กำลังใช้งานขณะนี้</h2>
+        <div id="activeList">กำลังโหลด...</div>
     </div>
 
-    <!-- 3. หน้าจองและดูคิว (User ปกติ - ซ่อนตอนแรก) -->
-    <div id="mainPage" class="hidden" style="width:100%; display:flex; flex-direction:column; align-items:center;">
-        <div class="card">
-            <h2>จองห้อง</h2>
-            <form id="bookingForm">
-                <input type="text" id="username" disabled>
-                <select id="room">
-                    <option value="Room A">ห้อง A</option>
-                    <option value="Room B">ห้อง B</option>
-                </select>
-                <input type="datetime-local" id="startTime" required>
-                <button type="submit">ยืนยันการจอง</button>
-            </form>
-            <div id="statusMessage" style="text-align: center; margin-top:10px;"></div>
-        </div>
-
-        <div class="card">
-            <h2>รายการเข้าใช้ห้อง</h2>
-            <div id="bookingList">กำลังโหลดข้อมูล...</div>
-        </div>
-    </div>
-
-    <!-- 4. หน้า Admin (ดูประวัติ & ตั้งค่า - ซ่อนตอนแรก) -->
-    <div id="adminPage" class="hidden card admin-card">
-        <h2>ตั้งค่าระบบ (Admin)</h2>
-        <div style="border:1px solid #ccc; padding:15px; border-radius:4px; margin-bottom:20px;">
-            <label>อีเมลสำหรับรับการแจ้งเตือน:</label>
-            <div style="display:flex; gap:10px;">
-                <input type="email" id="adminEmailInput" placeholder="โหลดข้อมูล...">
-                <button onclick="saveSettings()" style="width:120px;" class="btn-success">บันทึก</button>
-            </div>
-        </div>
-
-        <h2>ประวัติการใช้งานทั้งหมด</h2>
+    <!-- ส่วนที่ 3: ตารางประวัติ -->
+    <div class="card wide-card">
+        <h2 style="margin-top: 0;">ประวัติการใช้งานทั้งหมด</h2>
         <div style="overflow-x:auto;">
             <table>
                 <thead>
                     <tr>
-                        <th>ผู้จอง</th><th>ห้อง</th><th>สถานะ</th><th>จองเมื่อ</th><th>เช็คอิน</th><th>เช็คเอาท์</th>
+                        <th>ชื่อผู้ใช้</th>
+                        <th>ห้อง</th>
+                        <th>เวลาเข้า</th>
+                        <th>เวลาออก</th>
+                        <th>สถานะ</th>
                     </tr>
                 </thead>
-                <tbody id="historyTableBody">
-                    <tr><td colspan="6">กำลังโหลด...</td></tr>
+                <tbody id="historyTable">
+                    <tr><td colspan="5" style="text-align: center;">กำลังโหลดข้อมูล...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- ตัวบอกเวอร์ชันที่มุมขวาล่าง -->
-    <div class="version-badge">Version 1.2</div>
+    <div class="version">Version 3.0 (No Login)</div>
 
-    <script src="script.js"></script>
+    <script>
+        // เอา URL เว็บแอปตัวใหม่ล่าสุดจาก Apps Script มาวางตรงนี้
+        const API_URL = "วาง_URL_เว็บแอป_ตรงนี้"; 
+
+        document.addEventListener("DOMContentLoaded", fetchData);
+
+        // จัดการฟอร์ม Check-in
+        document.getElementById('checkInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let msg = document.getElementById('statusMsg');
+            msg.style.color = "blue";
+            msg.innerText = "กำลังบันทึกข้อมูล...";
+
+            let payload = {
+                action: "checkIn",
+                name: document.getElementById('userName').value,
+                room: document.getElementById('roomSelect').value
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json()).then(data => {
+                msg.style.color = "green";
+                msg.innerText = "Check-in สำเร็จ!";
+                document.getElementById('checkInForm').reset();
+                fetchData(); // โหลดข้อมูลใหม่
+                setTimeout(() => msg.innerText = "", 3000); // เคลียร์ข้อความทิ้งหลัง 3 วิ
+            });
+        });
+
+        // ดึงข้อมูลรายการกำลังใช้งาน และ ประวัติ
+        function fetchData() {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "getData" }) })
+            .then(res => res.json()).then(data => {
+                
+                // 1. เรนเดอร์ส่วนที่กำลังใช้งานอยู่
+                let activeDiv = document.getElementById('activeList');
+                activeDiv.innerHTML = "";
+                if(data.active.length === 0) {
+                    activeDiv.innerHTML = "<div style='color:#777; text-align:center;'>ไม่มีผู้ใช้งานในขณะนี้</div>";
+                } else {
+                    data.active.forEach(item => {
+                        let timeIn = new Date(item.inTime).toLocaleTimeString('th-TH');
+                        activeDiv.innerHTML += `
+                            <div class="active-item">
+                                <div>
+                                    <strong>${item.room}</strong> - ${item.name}<br>
+                                    <small style="color:#555;">เข้าเมื่อ: ${timeIn}</small>
+                                </div>
+                                <button class="btn-danger" onclick="doCheckOut('${item.id}')">Check-out</button>
+                            </div>
+                        `;
+                    });
+                }
+
+                // 2. เรนเดอร์ส่วนตารางประวัติ
+                let tbody = document.getElementById('historyTable');
+                tbody.innerHTML = "";
+                if(data.history.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>ยังไม่มีประวัติการใช้งาน</td></tr>";
+                } else {
+                    data.history.forEach(item => {
+                        let timeIn = new Date(item.inTime).toLocaleString('th-TH');
+                        let timeOut = item.outTime ? new Date(item.outTime).toLocaleString('th-TH') : "-";
+                        let statusColor = item.status === "กำลังใช้งาน" ? "color: #d39e00; font-weight:bold;" : "color: #28a745;";
+                        
+                        tbody.innerHTML += `<tr>
+                            <td>${item.name}</td>
+                            <td>${item.room}</td>
+                            <td>${timeIn}</td>
+                            <td>${timeOut}</td>
+                            <td style="${statusColor}">${item.status}</td>
+                        </tr>`;
+                    });
+                }
+            });
+        }
+
+        // ฟังก์ชันเมื่อกด Check-out
+        function doCheckOut(id) {
+            if(!confirm("ยืนยันการ Check-out คืนห้อง?")) return;
+            
+            document.getElementById('activeList').innerHTML = "กำลังบันทึก...";
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "checkOut", id: id }) })
+            .then(res => res.json()).then(data => {
+                fetchData(); // โหลดข้อมูลใหม่
+            });
+        }
+    </script>
 </body>
 </html>
