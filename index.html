@@ -2,34 +2,61 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจองห้อง</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <h2>จองห้อง (ระบบ User)</h2>
-    <form id="bookingForm">
+    <h2>จองห้องใช้งาน</h2>
+    
+    <div class="form-group">
         <label>ชื่อผู้ใช้งาน:</label>
-        <input type="text" id="username" required>
-        
+        <input type="text" id="userName" placeholder="ชื่อของคุณ">
+    </div>
+    <div class="form-group">
         <label>เลือกห้อง:</label>
-        <select id="room">
-            <option value="Room A">ห้อง A</option>
-            <option value="Room B">ห้อง B</option>
+        <select id="roomSelect">
+            <option value="Room A">ห้องประชุม A</option>
+            <option value="Room B">ห้องประชุม B</option>
         </select>
+    </div>
+    <button onclick="submitBooking()">ยืนยันการจอง</button>
 
-        <label>เวลาที่ต้องการจอง:</label>
-        <input type="datetime-local" id="startTime" required>
+    <p id="statusMessage"></p>
 
-        <button type="submit">ยืนยันการจอง</button>
-    </form>
+    <script>
+        // นำ URL ที่ได้จาก Apps Script มาใส่ที่นี่
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyI4hCxhAYb0wbpXMDQGBib1pmE5lOyUDZgpFgUobuMSaCbB2d94G-MKlpgXSSbV3dn/exec';
 
-    <div id="status"></div>
+        function submitBooking() {
+            const user = document.getElementById('userName').value;
+            const room = document.getElementById('roomSelect').value;
+            
+            document.getElementById('statusMessage').innerText = "กำลังส่งข้อมูล...";
 
-    <script src="script.js"></script>
+            // ส่งข้อมูลไปยังระบบหลังบ้าน
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // สำคัญ: เพื่อไม่ให้ติดปัญหาข้ามโดเมนจาก GitHub ไป Google
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'bookRoom',
+                    user: user,
+                    room: room,
+                    startTime: new Date().toISOString()
+                })
+            }).then(() => {
+                document.getElementById('statusMessage').innerText = "จองห้องสำเร็จ ระบบได้ส่งอีเมลแจ้งแอดมินแล้ว!";
+            }).catch(error => {
+                console.error('Error:', error);
+                document.getElementById('statusMessage').innerText = "เกิดข้อผิดพลาดในการจอง";
+            });
+        }
+    </script>
 </body>
 </html>
