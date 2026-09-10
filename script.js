@@ -1,4 +1,4 @@
-const API_URL = "วาง_URL_เว็บแอป_ตรงนี้"; 
+const API_URL = "https://script.google.com/macros/s/AKfycby4qeT6oapO4VkLvAdSlhLqqkjvq7i10rond4rfY0NdMlJaoPvRMhI7DFkfM3cMJEvF/exec"; 
 
 let currentUser = "";
 let currentRole = "";
