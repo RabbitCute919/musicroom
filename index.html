@@ -5,38 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบขอใช้ห้อง</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #f9f9f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        body { font-family: Arial, sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; }
+        .admin-card { max-width: 800px; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #0056b3; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-success { background-color: #28a745; }
+        .hidden { display: none; }
         .booking-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-checkin { background-color: #28a745; width: auto; padding: 5px 15px; margin:0;}
-        .btn-checkout { background-color: #dc3545; width: auto; padding: 5px 15px; margin:0;}
+        .action-btn { width: auto; padding: 5px 15px; margin:0; }
+        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>จองห้อง</h2>
-        <form id="bookingForm">
-            <label>ชื่อผู้ใช้งาน:</label>
-            <input type="text" id="username" required>
-            <label>เลือกห้อง:</label>
-            <select id="room">
-                <option value="Room A">ห้อง A</option>
-                <option value="Room B">ห้อง B</option>
-            </select>
-            <label>เวลาที่ต้องการจอง:</label>
-            <input type="datetime-local" id="startTime" required>
-            <button type="submit">ยืนยันการจอง</button>
+    <!-- หน้า Login -->
+    <div id="loginPage" class="card">
+        <h2>เข้าสู่ระบบ</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUser" placeholder="ชื่อผู้ใช้งาน" required>
+            <input type="password" id="loginPass" placeholder="รหัสผ่าน" required>
+            <button type="submit">Login</button>
         </form>
-        <div id="statusMessage"></div>
+        <div id="loginStatus" style="color:red; text-align:center;"></div>
     </div>
 
-    <div class="card">
-        <h2>รายการเข้าใช้ห้อง (Check In / Check Out)</h2>
-        <div id="bookingList">กำลังโหลดข้อมูล...</div>
+    <!-- แถบเมนูด้านบน (ซ่อนตอนยังไม่ล็อคอิน) -->
+    <div id="navBar" class="nav-bar hidden">
+        <span id="welcomeText" style="font-weight:bold;"></span>
+        <div>
+            <button id="btnAdmin" class="action-btn hidden" style="background:#ffc107; color:black;">จัดการระบบ</button>
+            <button id="btnHome" class="action-btn hidden" style="background:#17a2b8;">หน้าหลัก</button>
+            <button id="btnLogout" class="action-btn btn-danger">ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <!-- หน้าจอง (User ปกติ) -->
+    <div id="mainPage" class="hidden" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <div class="card">
+            <h2>จองห้อง</h2>
+            <form id="bookingForm">
+                <input type="text" id="username" disabled> <!-- ออโต้จากชื่อล็อคอิน -->
+                <select id="room">
+                    <option value="Room A">ห้อง A</option>
+                    <option value="Room B">ห้อง B</option>
+                </select>
+                <input type="datetime-local" id="startTime" required>
+                <button type="submit">ยืนยันการจอง</button>
+            </form>
+            <div id="statusMessage"></div>
+        </div>
+
+        <div class="card">
+            <h2>รายการเข้าใช้ห้อง</h2>
+            <div id="bookingList">กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <!-- หน้า Admin (ดูประวัติ & ตั้งค่า) -->
+    <div id="adminPage" class="hidden card admin-card">
+        <h2>ตั้งค่าระบบ (Admin)</h2>
+        <div style="border:1px solid #ccc; padding:15px; border-radius:4px; margin-bottom:20px;">
+            <label>อีเมลสำหรับรับการแจ้งเตือน:</label>
+            <div style="display:flex; gap:10px;">
+                <input type="email" id="adminEmailInput" placeholder="โหลดข้อมูล...">
+                <button onclick="saveSettings()" style="width:120px;" class="btn-success">บันทึก</button>
+            </div>
+        </div>
+
+        <h2>ประวัติการใช้งานทั้งหมด</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ผู้จอง</th><th>ห้อง</th><th>สถานะ</th><th>จองเมื่อ</th><th>เช็คอิน</th><th>เช็คเอาท์</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr><td colspan="6">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="script.js"></script>
