@@ -13,18 +13,36 @@
         button:hover { background-color: #0056b3; }
         .btn-danger { background-color: #dc3545; }
         .btn-success { background-color: #28a745; }
-        .hidden { display: none; }
+        
+        /* แก้ปัญหาหน้าโชว์พร้อมกัน โดยใส่ !important บังคับให้ซ่อนเด็ดขาด */
+        .hidden { display: none !important; } 
+        
         .booking-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
         .action-btn { width: auto; padding: 5px 15px; margin:0; }
-        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .nav-bar { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
+
+        /* สไตล์สำหรับตัวบอกเวอร์ชันมุมขวาล่าง */
+        .version-badge {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #555;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-weight: bold;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
 
-    <!-- หน้า Login -->
+    <!-- 1. หน้า Login -->
     <div id="loginPage" class="card">
         <h2>เข้าสู่ระบบ</h2>
         <form id="loginForm">
@@ -32,25 +50,25 @@
             <input type="password" id="loginPass" placeholder="รหัสผ่าน" required>
             <button type="submit">Login</button>
         </form>
-        <div id="loginStatus" style="color:red; text-align:center;"></div>
+        <div id="loginStatus" style="color:red; text-align:center; margin-top:10px;"></div>
     </div>
 
-    <!-- แถบเมนูด้านบน (ซ่อนตอนยังไม่ล็อคอิน) -->
+    <!-- 2. แถบเมนูด้านบน (ซ่อนตอนยังไม่ล็อคอิน สังเกตคลาส hidden) -->
     <div id="navBar" class="nav-bar hidden">
         <span id="welcomeText" style="font-weight:bold;"></span>
-        <div>
-            <button id="btnAdmin" class="action-btn hidden" style="background:#ffc107; color:black;">จัดการระบบ</button>
+        <div style="display: flex; gap: 5px;">
+            <button id="btnAdmin" class="action-btn hidden" style="background:#ffc107; color:black;">ตั้งค่าระบบ</button>
             <button id="btnHome" class="action-btn hidden" style="background:#17a2b8;">หน้าหลัก</button>
             <button id="btnLogout" class="action-btn btn-danger">ออกจากระบบ</button>
         </div>
     </div>
 
-    <!-- หน้าจอง (User ปกติ) -->
+    <!-- 3. หน้าจองและดูคิว (User ปกติ - ซ่อนตอนแรก) -->
     <div id="mainPage" class="hidden" style="width:100%; display:flex; flex-direction:column; align-items:center;">
         <div class="card">
             <h2>จองห้อง</h2>
             <form id="bookingForm">
-                <input type="text" id="username" disabled> <!-- ออโต้จากชื่อล็อคอิน -->
+                <input type="text" id="username" disabled>
                 <select id="room">
                     <option value="Room A">ห้อง A</option>
                     <option value="Room B">ห้อง B</option>
@@ -58,7 +76,7 @@
                 <input type="datetime-local" id="startTime" required>
                 <button type="submit">ยืนยันการจอง</button>
             </form>
-            <div id="statusMessage"></div>
+            <div id="statusMessage" style="text-align: center; margin-top:10px;"></div>
         </div>
 
         <div class="card">
@@ -67,7 +85,7 @@
         </div>
     </div>
 
-    <!-- หน้า Admin (ดูประวัติ & ตั้งค่า) -->
+    <!-- 4. หน้า Admin (ดูประวัติ & ตั้งค่า - ซ่อนตอนแรก) -->
     <div id="adminPage" class="hidden card admin-card">
         <h2>ตั้งค่าระบบ (Admin)</h2>
         <div style="border:1px solid #ccc; padding:15px; border-radius:4px; margin-bottom:20px;">
@@ -92,6 +110,9 @@
             </table>
         </div>
     </div>
+
+    <!-- ตัวบอกเวอร์ชันที่มุมขวาล่าง -->
+    <div class="version-badge">Version 1.2</div>
 
     <script src="script.js"></script>
 </body>
